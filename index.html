@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<!--
+    This is a demonstration app that shows how to use the Echo Nest API
+    from within a Spotify APP.
+-->
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Playlister</title>
+	<link rel="stylesheet" href="sp://import/css/adam.css">
+	<link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+</head>
+
+<body>
+    <h2 id='title'> Echo Nest / Spotify Demonstration </h2>
+    <div id="info"> </div>
+    <button id="new" onclick="makePlaylistFromNowPlaying()"> Generate Playlist </button>
+    <h2 id='playlist-name'> Playlist Name</h2>
+    <div id='all-results'>
+        <ul id="results"> </ul>
+    </div>
+</body>
+
+<script type="text/javascript">
+
+sp = getSpotifyApi(1);
+jQuery.ajaxSettings.traditional = true;  
+
+function makePlaylistFromNowPlaying() {
+	var playerTrackInfo = sp.trackPlayer.getNowPlayingTrack();
+	if (playerTrackInfo == null) {
+        info("Start playing something and I'll make a playlist of good songs based on that song");
+	} else {
+		var track = playerTrackInfo.track;
+        fetchPlaylist(track.artists[0], 25);
+	}
+}
+
+function createPlayButton(song) {
+    var span = $("<span>");
+    var button = $("<img src='play.png'>");
+    var song_name = ' ' + song.title + " by " + song.artist_name;
+
+    button.click(function() {
+        playSong(song);
+    });
+    span.append(button);
+    span.append(song_name);
+    return span;
+}
+
+function playSong(song) {
+    var uri = song.tracks[0].foreign_id;
+    uri = uri.replace('spotify-WW', 'spotify');
+    sp.trackPlayer.playTrackFromUri(uri, {
+       onSuccess: function() { console.log('play success for ', uri);} ,
+       onBadFailure: function () { console.log('play fail for ', uri); },
+       onComplete: function () { console.log('play complete for ', uri); },
+    });
+}
+
+function fetchPlaylist(artist, size) {
+    info('Getting playlist for ' + artist.name);
+    var artist_id = artist.uri.replace('spotify', 'spotify-WW');
+    var url = 'http://developer.echonest.com/api/v4/playlist/basic?api_key=N6E4NIOVYMTHNDM8J&callback=?';
+
+    $.getJSON(url, { 'artist_id': artist_id, 'format':'jsonp', limit: true,
+            'results': size, 'type':'artist-radio', bucket : ['id:spotify-WW', 'tracks']}, function(data) {
+        if (checkResponse(data)) {
+            info("");
+            $('#playlist-name').text('Playlist seed: ' + artist.name);
+            $("#results").empty();
+            var curTracks = []
+            for (var i = 0; i < data.response.songs.length; i++) {
+                var li = $("<li>");
+                li.append(createPlayButton(data.response.songs[i]));
+                $("#results").append(li);
+            }
+        } else {
+            info("trouble getting results");
+        }
+    });
+}
+
+
+function info(s) {
+    $("#info").text(s);
+}
+
+function error(s) {
+    info(s);
+}
+
+function checkResponse(data) {
+    if (data.response) {
+        if (data.response.status.code != 0) {
+            error("Whoops... Unexpected error from server. " + data.response.status.message);
+            log(JSON.stringify(data.response));
+        } else {
+            return true;
+        }
+    } else {
+        error("Unexpected response from server");
+    }
+    return false;
+}
+
+$(document).ready(function() {
+    makePlaylistFromNowPlaying();
+});
+
+</script>
+</html>
