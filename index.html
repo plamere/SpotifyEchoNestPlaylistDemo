@@ -22,11 +22,13 @@
     <div id='all-results'>
         <ul id="results"> </ul>
     </div>
+    <button id='save-button'> Save playlist</button>
 </body>
 
 <script type="text/javascript">
 
-sp = getSpotifyApi(1);
+var sp = getSpotifyApi(1);
+var models = sp.require("sp://import/scripts/api/models");
 jQuery.ajaxSettings.traditional = true;  
 
 function makePlaylistFromNowPlaying() {
@@ -53,13 +55,17 @@ function createPlayButton(song) {
 }
 
 function playSong(song) {
-    var uri = song.tracks[0].foreign_id;
-    uri = uri.replace('spotify-WW', 'spotify');
+    var uri = getSpotifyID(song);
     sp.trackPlayer.playTrackFromUri(uri, {
        onSuccess: function() { console.log('play success for ', uri);} ,
        onBadFailure: function () { console.log('play fail for ', uri); },
        onComplete: function () { console.log('play complete for ', uri); },
     });
+}
+
+function getSpotifyID(song) {
+    var uri = song.tracks[0].foreign_id;
+    return uri.replace('spotify-WW', 'spotify');
 }
 
 function fetchPlaylist(artist, size) {
@@ -79,10 +85,22 @@ function fetchPlaylist(artist, size) {
                 li.append(createPlayButton(data.response.songs[i]));
                 $("#results").append(li);
             }
+
+            $("#save-button").unbind();
+            $("#save-button").click( function() {
+                savePlaylist(artist.name + ' playlist', data.response.songs);
+            });
         } else {
             info("trouble getting results");
         }
     });
+}
+
+function savePlaylist(title, songs) {
+    var thePlaylist = new models.Playlist(title);
+    for (var i = 0; i < songs.length; i++) {
+        thePlaylist.add(getSpotifyID(songs[i]));
+    }
 }
 
 
