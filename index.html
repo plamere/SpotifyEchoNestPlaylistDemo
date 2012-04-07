@@ -7,10 +7,10 @@
 
 <html>
 <head>
-	<meta charset="utf-8">
-	<title>Playlister</title>
-	<link rel="stylesheet" href="sp://import/css/adam.css">
-	<link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8">
+    <title>Playlister</title>
+    <link rel="stylesheet" href="sp://import/css/adam.css">
+    <link rel="stylesheet" href="styles.css">
     <script type="text/javascript" src="js/jquery.min.js"></script>
 </head>
 
@@ -32,13 +32,13 @@ var models = sp.require("sp://import/scripts/api/models");
 jQuery.ajaxSettings.traditional = true;  
 
 function makePlaylistFromNowPlaying() {
-	var playerTrackInfo = sp.trackPlayer.getNowPlayingTrack();
-	if (playerTrackInfo == null) {
+    var playerTrackInfo = sp.trackPlayer.getNowPlayingTrack();
+    if (playerTrackInfo == null) {
         info("Start playing something and I'll make a playlist of good songs based on that song");
-	} else {
-		var track = playerTrackInfo.track;
+    } else {
+        var track = playerTrackInfo.track;
         fetchPlaylist(track.artists[0], 25);
-	}
+    }
 }
 
 function createPlayButton(song) {
