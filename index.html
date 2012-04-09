@@ -32,12 +32,11 @@ var models = sp.require("sp://import/scripts/api/models");
 jQuery.ajaxSettings.traditional = true;  
 
 function makePlaylistFromNowPlaying() {
-    var playerTrackInfo = sp.trackPlayer.getNowPlayingTrack();
-    if (playerTrackInfo == null) {
+    var track = models.player.track;
+    if (track == null) {
         info("Start playing something and I'll make a playlist of good songs based on that song");
     } else {
-        var track = playerTrackInfo.track;
-        fetchPlaylist(track.artists[0], 25);
+        fetchPlaylist(models.player.track.artists[0], 25);
     }
 }
 
@@ -47,20 +46,12 @@ function createPlayButton(song) {
     var song_name = ' ' + song.title + " by " + song.artist_name;
 
     button.click(function() {
-        playSong(song);
+        var uri = getSpotifyID(song);
+        models.player.play(uri);
     });
     span.append(button);
     span.append(song_name);
     return span;
-}
-
-function playSong(song) {
-    var uri = getSpotifyID(song);
-    sp.trackPlayer.playTrackFromUri(uri, {
-       onSuccess: function() { console.log('play success for ', uri);} ,
-       onBadFailure: function () { console.log('play fail for ', uri); },
-       onComplete: function () { console.log('play complete for ', uri); },
-    });
 }
 
 function getSpotifyID(song) {
