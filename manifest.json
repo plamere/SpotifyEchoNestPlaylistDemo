@@ -1,5 +1,14 @@
 {
-	"BundleType": "Application",
+	"AppDescription": {
+		"en": "SpotifyEchoNestPlaylistDemo"
+	},
+	"BundleIdentifier": "playlister",
+  	"BundleType": "Application",
+  	"BundleVersion": "0.0.1",
+  	"Dependencies": {
+    	"api": "1.0.0",
+    	"views": "1.10.0"
+    },
 	"AppIcon": {
 		"18x18": "icon.png"
 	},
