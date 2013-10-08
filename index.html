@@ -40,7 +40,7 @@ function makePlaylistFromNowPlaying() {
 				});
 		    }
 		});	
-		});
+	});
 }
 
 function createPlayButton(song) {
@@ -67,7 +67,7 @@ function getSpotifyID(song) {
 function fetchPlaylist(artist, size) {
     info('Getting playlist for ' + artist.name);
     var artist_id = artist.uri.replace('spotify', 'spotify-WW');
-    var url = 'http://developer.echonest.com/api/v4/playlist/basic?api_key=BUXOBJF9CVYQ5Q2SF&bucket=id:spotify-WW&bucket=tracks&callback=?';
+    var url = 'http://developer.echonest.com/api/v4/playlist/basic?api_key=N6E4NIOVYMTHNDM8J&bucket=id:spotify-WW&bucket=tracks&callback=?';
 
     $.getJSON(url, { 'artist_id': artist_id, 'format':'jsonp', limit: true,
             'results': size, 'type':'artist-radio'}, function(data) {
