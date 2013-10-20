@@ -27,17 +27,20 @@
 
 <script type="text/javascript">
 
-var sp = getSpotifyApi(1);
-var models = sp.require("sp://import/scripts/api/models");
-jQuery.ajaxSettings.traditional = true;  
-
 function makePlaylistFromNowPlaying() {
-    var track = models.player.track;
-    if (track == null) {
-        info("Start playing something and I'll make a playlist of good songs based on that song");
-    } else {
-        fetchPlaylist(models.player.track.artists[0], 25);
-    }
+	
+	require(['$api/models'], function(models) {
+		models.player.load("track").done(function(player) {
+			var track = player.track;
+		    if (track == null) {
+		        info("Start playing something and I'll make a playlist of good songs based on that song");
+		    } else {
+		        track.load("artists").done(function(track) {
+					fetchPlaylist(track.artists[0], 25);
+				});
+		    }
+		});	
+	});
 }
 
 function createPlayButton(song) {
@@ -47,7 +50,9 @@ function createPlayButton(song) {
 
     button.click(function() {
         var uri = getSpotifyID(song);
-        models.player.play(uri);
+        require(['$api/models'], function(models) {
+			models.player.playTrack(models.Track.fromURI(uri));
+		});
     });
     span.append(button);
     span.append(song_name);
@@ -62,10 +67,10 @@ function getSpotifyID(song) {
 function fetchPlaylist(artist, size) {
     info('Getting playlist for ' + artist.name);
     var artist_id = artist.uri.replace('spotify', 'spotify-WW');
-    var url = 'http://developer.echonest.com/api/v4/playlist/basic?api_key=N6E4NIOVYMTHNDM8J&callback=?';
+    var url = 'http://developer.echonest.com/api/v4/playlist/basic?api_key=N6E4NIOVYMTHNDM8J&bucket=id:spotify-WW&bucket=tracks&callback=?';
 
     $.getJSON(url, { 'artist_id': artist_id, 'format':'jsonp', limit: true,
-            'results': size, 'type':'artist-radio', bucket : ['id:spotify-WW', 'tracks']}, function(data) {
+            'results': size, 'type':'artist-radio'}, function(data) {
         if (checkResponse(data)) {
             info("");
             $('#playlist-name').text('Playlist seed: ' + artist.name);
@@ -88,10 +93,17 @@ function fetchPlaylist(artist, size) {
 }
 
 function savePlaylist(title, songs) {
-    var thePlaylist = new models.Playlist(title);
-    for (var i = 0; i < songs.length; i++) {
-        thePlaylist.add(getSpotifyID(songs[i]));
-    }
+    require(['$api/models'], function(models) {
+		models.Playlist.create(title).done(function(playlist) {
+			playlist.load("tracks").done(function(playlist) {
+				var tracks = [];
+    			for (var i = 0; i < songs.length; i++) {
+					tracks.push(models.Track.fromURI(getSpotifyID(songs[i])));	
+    			}
+				playlist.tracks.add(tracks);
+			});
+		});
+	});
 }
 
 
